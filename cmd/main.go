@@ -9,6 +9,7 @@ import (
 
 	controllerv1 "auth-server/pkg/v1/controller"
 	middlewarev1 "auth-server/pkg/v1/middleware"
+	tokenservicev1 "auth-server/pkg/v1/token"
 )
 
 const (
@@ -51,12 +52,15 @@ func configureLogger() {
 func registerV1Routes(router *gin.Engine) {
 	v1 := router.Group("/v1")
 
+	jwtServiceV1 := tokenservicev1.NewJWTService()
+
 	// Add a test authorized endpoint
 	testAuth := v1.Group("/test")
-	testAuth.Use(middlewarev1.AuthorizeToken())
+	testAuth.Use(middlewarev1.AuthorizeToken(jwtServiceV1))
 	testAuth.GET("/ping", pingV1)
 
-	controllerv1.NewLoginController(v1)
+	controllerv1.NewLoginController(v1, jwtServiceV1)
+	controllerv1.NewTokenController(v1, jwtServiceV1)
 }
 
 // route handler

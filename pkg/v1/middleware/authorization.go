@@ -17,7 +17,7 @@ const (
 )
 
 // AuthorizeToken checks that a JWT token is valid and attaches the claims to the context
-func AuthorizeToken() gin.HandlerFunc {
+func AuthorizeToken(jwtService tokenservice.JWTService) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		authHeader := context.GetHeader(authorizationHeader)
 		if authHeader == "" {
@@ -32,9 +32,14 @@ func AuthorizeToken() gin.HandlerFunc {
 		}
 
 		tokenString := splits[1]
-		token, err := tokenservice.NewJWTService().ValidateToken(tokenString)
+		token, err := jwtService.ValidateAccessToken(tokenString)
 		if err != nil {
-			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+
+		if !token.Valid {
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Invalid access token"})
 			return
 		}
 

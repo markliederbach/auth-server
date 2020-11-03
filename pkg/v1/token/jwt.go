@@ -1,6 +1,7 @@
 package token
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -14,12 +15,14 @@ const (
 
 	issuer string = "markliederbach/auth-service"
 
-	accessTokenExpire time.Duration = time.Second * 15
+	accessTokenExpire  time.Duration = time.Second * 15
+	refreshTokenExpire time.Duration = time.Minute * 1
 )
 
 type JWTService interface {
-	GenerateToken(user JWTUser) (string, error)
-	ValidateToken(encodedToken string) (*jwt.Token, error)
+	GenerateToken(user JWTUser, generateRefreshToken bool) (string, string, error)
+	ValidateAccessToken(encodedToken string) (*jwt.Token, error)
+	ValidateRefreshToken(encodedToken string) (*jwt.Token, error)
 }
 
 type JWTUser struct {
@@ -34,6 +37,7 @@ type jwtService struct {
 	accessTokenSecret  string
 	refreshTokenSecret string
 	issuer             string
+	validRefreshTokens []string
 }
 
 func NewJWTService() JWTService {
@@ -51,12 +55,16 @@ func NewJWTService() JWTService {
 		accessTokenSecret:  accessTokenSecret,
 		refreshTokenSecret: refreshTokenSecret,
 		issuer:             issuer,
+		// TODO: move list to DB
+		validRefreshTokens: []string{},
 	}
 }
 
-func (s *jwtService) GenerateToken(user JWTUser) (string, error) {
+func (s *jwtService) GenerateToken(user JWTUser, generateRefreshToken bool) (string, string, error) {
 	now := time.Now()
-	claims := &authCustomClaims{
+
+	// Access token, including expiration date
+	accessClaims := &authCustomClaims{
 		jwt.StandardClaims{
 			Subject: user.Username,
 
@@ -66,16 +74,76 @@ func (s *jwtService) GenerateToken(user JWTUser) (string, error) {
 			NotBefore: now.Unix(),
 		},
 	}
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	accessTokenString, err := accessToken.SignedString([]byte(s.accessTokenSecret))
+	if err != nil {
+		return "", "", err
+	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(s.accessTokenSecret))
+	if !generateRefreshToken {
+		// If we don't care about refresh tokens, we're done
+		return accessTokenString, "", nil
+	}
+
+	// Refresh token, including extended expiration date
+	refreshClaims := &authCustomClaims{
+		jwt.StandardClaims{
+			Subject: user.Username,
+
+			ExpiresAt: now.Add(refreshTokenExpire).Unix(),
+			Issuer:    s.issuer,
+			IssuedAt:  now.Unix(),
+			NotBefore: now.Unix(),
+		},
+	}
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	refreshTokenString, err := refreshToken.SignedString([]byte(s.refreshTokenSecret))
+	if err != nil {
+		return "", "", err
+	}
+
+	// Store refresh token
+	s.validRefreshTokens = append(s.validRefreshTokens, refreshTokenString)
+
+	return accessTokenString, refreshTokenString, nil
 }
 
-func (s *jwtService) ValidateToken(encodedToken string) (*jwt.Token, error) {
+func (s *jwtService) ValidateAccessToken(encodedToken string) (*jwt.Token, error) {
+	return validateToken(encodedToken, s.accessTokenSecret)
+}
+
+func (s *jwtService) ValidateRefreshToken(encodedToken string) (*jwt.Token, error) {
+	tokenIndex := indexOf(s.validRefreshTokens, encodedToken)
+	if indexOf(s.validRefreshTokens, encodedToken) == -1 {
+		return nil, errors.New("Invalid refresh token")
+	}
+	token, err := validateToken(encodedToken, s.refreshTokenSecret)
+	if err != nil {
+		// Cleanup after ourselves. This is not thread-safe, FYI
+		s.validRefreshTokens = removeIndex(s.validRefreshTokens, tokenIndex)
+		return nil, err
+	}
+	return token, nil
+}
+
+func validateToken(encodedToken string, tokenSecret string) (*jwt.Token, error) {
 	return jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		if _, valid := token.Method.(*jwt.SigningMethodHMAC); !valid {
 			return nil, fmt.Errorf("Invalid token algorithm %v", token.Header["alg"])
 		}
-		return []byte(s.accessTokenSecret), nil
+		return []byte(tokenSecret), nil
 	})
+}
+
+func indexOf(items []string, value string) int {
+	for index, item := range items {
+		if value == item {
+			return index
+		}
+	}
+	return -1
+}
+
+func removeIndex(items []string, index int) []string {
+	return append(items[:index], items[index+1:]...)
 }

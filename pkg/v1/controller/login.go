@@ -29,10 +29,7 @@ type LoginController struct {
 	jwtService tokenservice.JWTService
 }
 
-func NewLoginController(group *gin.RouterGroup) *LoginController {
-
-	jwtService := tokenservice.NewJWTService()
-
+func NewLoginController(group *gin.RouterGroup, jwtService tokenservice.JWTService) *LoginController {
 	contextLog := log.WithFields(
 		log.Fields{
 			"controller": "LoginController",
@@ -60,19 +57,16 @@ func (c *LoginController) Login(context *gin.Context) {
 		return
 	}
 
-	// Authenticate User - TODO
+	// TODO: Authenticate User
 
-	// Generate JWT
-	token, err := c.jwtService.GenerateToken(
-		tokenservice.JWTUser{
-			Username: request.Username,
-		},
-	)
+	// Generate JWTs
+	accessToken, refreshToken, err := c.jwtService.GenerateToken(tokenservice.JWTUser{Username: request.Username}, true)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
 	context.JSON(http.StatusOK, gin.H{
-		"access_token": token,
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
 	})
 }
