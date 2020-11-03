@@ -10,13 +10,15 @@ import (
 )
 
 const (
-	accessTokenVariable  string = "ACCESS_TOKEN_SECRET"
-	refreshTokenVariable string = "REFRESH_TOKEN_SECRET"
+	accessTokenVariable        string = "ACCESS_TOKEN_SECRET"
+	refreshTokenVariable       string = "REFRESH_TOKEN_SECRET"
+	accessTokenExpireVariable  string = "ACCESS_TOKEN_EXPIRE"
+	refreshTokenExpireVariable string = "REFRESH_TOKEN_EXPIRE"
 
 	issuer string = "markliederbach/auth-service"
 
-	accessTokenExpire  time.Duration = time.Second * 15
-	refreshTokenExpire time.Duration = time.Minute * 1
+	defaultAccessTokenExpire  time.Duration = time.Second * 15
+	defaultRefreshTokenExpire time.Duration = time.Second * 1
 )
 
 type JWTService interface {
@@ -36,11 +38,16 @@ type authCustomClaims struct {
 type jwtService struct {
 	accessTokenSecret  string
 	refreshTokenSecret string
+
+	accessTokenExpire  time.Duration
+	refreshTokenExpire time.Duration
+
 	issuer             string
 	validRefreshTokens []string
 }
 
 func NewJWTService() JWTService {
+	var err error
 	accessTokenSecret := os.Getenv(accessTokenVariable)
 	if accessTokenSecret == "" {
 		panic(fmt.Errorf("Please set %s", accessTokenVariable))
@@ -51,10 +58,35 @@ func NewJWTService() JWTService {
 		panic(fmt.Errorf("Please set %s", refreshTokenVariable))
 	}
 
+	var accessTokenExpire time.Duration
+	accessTokenExpireRaw := os.Getenv(accessTokenExpireVariable)
+	if accessTokenExpireRaw == "" {
+		accessTokenExpire = defaultAccessTokenExpire
+	} else {
+		accessTokenExpire, err = time.ParseDuration(accessTokenExpireRaw)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	var refreshTokenExpire time.Duration
+	refreshTokenExpireRaw := os.Getenv(accessTokenExpireVariable)
+	if refreshTokenExpireRaw == "" {
+		refreshTokenExpire = defaultRefreshTokenExpire
+	} else {
+		refreshTokenExpire, err = time.ParseDuration(refreshTokenExpireRaw)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	return &jwtService{
 		accessTokenSecret:  accessTokenSecret,
 		refreshTokenSecret: refreshTokenSecret,
-		issuer:             issuer,
+		accessTokenExpire:  accessTokenExpire,
+		refreshTokenExpire: refreshTokenExpire,
+
+		issuer: issuer,
 		// TODO: move list to DB
 		validRefreshTokens: []string{},
 	}
@@ -68,7 +100,7 @@ func (s *jwtService) GenerateToken(user JWTUser, generateRefreshToken bool) (str
 		jwt.StandardClaims{
 			Subject: user.Username,
 
-			ExpiresAt: now.Add(accessTokenExpire).Unix(),
+			ExpiresAt: now.Add(s.accessTokenExpire).Unix(),
 			Issuer:    s.issuer,
 			IssuedAt:  now.Unix(),
 			NotBefore: now.Unix(),
@@ -90,7 +122,7 @@ func (s *jwtService) GenerateToken(user JWTUser, generateRefreshToken bool) (str
 		jwt.StandardClaims{
 			Subject: user.Username,
 
-			ExpiresAt: now.Add(refreshTokenExpire).Unix(),
+			ExpiresAt: now.Add(s.refreshTokenExpire).Unix(),
 			Issuer:    s.issuer,
 			IssuedAt:  now.Unix(),
 			NotBefore: now.Unix(),
