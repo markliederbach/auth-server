@@ -61,6 +61,7 @@ func registerV1Routes(router *gin.Engine) {
 
 	controllerv1.NewLoginController(v1, jwtServiceV1)
 	controllerv1.NewTokenController(v1, jwtServiceV1)
+	controllerv1.NewLogoutController(v1, jwtServiceV1)
 }
 
 // route handler

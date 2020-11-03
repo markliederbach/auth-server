@@ -18,13 +18,14 @@ const (
 	issuer string = "markliederbach/auth-service"
 
 	defaultAccessTokenExpire  time.Duration = time.Second * 15
-	defaultRefreshTokenExpire time.Duration = time.Second * 1
+	defaultRefreshTokenExpire time.Duration = time.Minute * 1
 )
 
 type JWTService interface {
 	GenerateToken(user JWTUser, generateRefreshToken bool) (string, string, error)
 	ValidateAccessToken(encodedToken string) (*jwt.Token, error)
 	ValidateRefreshToken(encodedToken string) (*jwt.Token, error)
+	RemoveRefreshToken(encodedToken string)
 }
 
 type JWTUser struct {
@@ -156,6 +157,14 @@ func (s *jwtService) ValidateRefreshToken(encodedToken string) (*jwt.Token, erro
 		return nil, err
 	}
 	return token, nil
+}
+
+func (s *jwtService) RemoveRefreshToken(encodedToken string) {
+	tokenIndex := indexOf(s.validRefreshTokens, encodedToken)
+	if indexOf(s.validRefreshTokens, encodedToken) == -1 {
+		return
+	}
+	s.validRefreshTokens = removeIndex(s.validRefreshTokens, tokenIndex)
 }
 
 func validateToken(encodedToken string, tokenSecret string) (*jwt.Token, error) {

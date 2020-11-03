@@ -10,10 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	_ Controller = &LoginController{}
-)
-
 const (
 	loginRoute string = "/login"
 )

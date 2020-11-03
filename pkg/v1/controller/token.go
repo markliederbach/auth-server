@@ -11,10 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	_ Controller = &TokenController{}
-)
-
 const (
 	tokenRoute string = "/token"
 )
