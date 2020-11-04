@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  lint:
+  tests:
     runs-on:
       - ubuntu-latest
     steps:
@@ -27,5 +27,7 @@ jobs:
         uses: actions/setup-go@v1
         with:
           go-version: 1.15
-      - name: Run build
+      - name: Lint
         run: task lint
+      - name: Test
+        run: task test
