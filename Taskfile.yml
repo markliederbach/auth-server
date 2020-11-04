@@ -20,6 +20,13 @@ tasks:
         GOPATH: "{{.GOPATH}}"
       cmds:
         - sh: go fmt $$(go list ./...)
+    lint:
+      desc: Run linters for project
+      env:
+        GOPATH: "{{.GOPATH}}"
+      cmds:
+        - sh: go run golang.org/x/lint/golint --set_exit_status $$(go list ./...)
+        - go vet ./...
     test:
       desc: Test the plugin
       env:
