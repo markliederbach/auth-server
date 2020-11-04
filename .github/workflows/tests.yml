@@ -17,10 +17,6 @@ jobs:
         run: |
           curl -sL https://taskfile.dev/install.sh | sh
           sudo mv ./bin/task /usr/local/bin
-      - name: Install GoReleaser
-        run: |
-          curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
-          sudo mv ./bin/goreleaser /usr/local/bin
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Go
