@@ -1,0 +1,34 @@
+version: "2"
+
+tasks:
+    deps:
+      desc: "Install dependencies for local development"
+      cmds:
+        - task: deps:goreleaser
+        - python3 -m pip install pre-commit
+        - pre-commit install
+        - go mod tidy
+        - go mod vendor
+    deps:goreleaser:
+      desc: Install goreleaser (requires sudo)
+      dir: /usr/local
+      cmds:
+        - curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sudo sh
+    fmt:
+      desc: Format project code
+      env:
+        GOPATH: "{{.GOPATH}}"
+      cmds:
+        - sh: go fmt $$(go list ./...)
+    test:
+      desc: Test the plugin
+      env:
+        GOPATH: "{{.GOPATH}}"
+      cmds:
+        - go test ./...
+    build:
+      desc: Run the build for the current platform
+      env:
+        GOPATH: "{{.GOPATH}}"
+      cmds:
+        - goreleaser --snapshot --skip-publish
