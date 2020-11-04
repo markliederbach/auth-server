@@ -7,6 +7,8 @@ vars:
 tasks:
     deps:
       desc: "Install dependencies for local development"
+      env:
+        GOPATH: "{{.GOPATH}}"
       cmds:
         - task: deps:goreleaser
         - python3 -m pip install pre-commit
