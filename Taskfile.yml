@@ -1,5 +1,9 @@
 version: "2"
 
+vars:
+  GOPATH:
+    sh: go env GOPATH
+
 tasks:
     deps:
       desc: "Install dependencies for local development"
