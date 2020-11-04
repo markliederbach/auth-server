@@ -42,7 +42,7 @@ func NewTokenController(group *gin.RouterGroup, jwtService tokenservice.JWTServi
 }
 
 func (c *TokenController) registerRoutes() {
-	c.log.Info("Registering routes")
+	// c.log.Info("Registering routes")
 	c.group.POST(tokenRoute, c.Token)
 }
 

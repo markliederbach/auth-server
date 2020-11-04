@@ -41,7 +41,7 @@ func NewLogoutController(group *gin.RouterGroup, jwtService tokenservice.JWTServ
 }
 
 func (c *LogoutController) registerRoutes() {
-	c.log.Info("Registering routes")
+	// c.log.Info("Registering routes")
 	c.group.DELETE(logoutRoute, c.Logout)
 }
 

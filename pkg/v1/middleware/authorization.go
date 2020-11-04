@@ -43,7 +43,8 @@ func AuthorizeToken(jwtService tokenservice.JWTService) gin.HandlerFunc {
 			return
 		}
 
+		// Make claim data available to downstream context
 		claims := token.Claims.(jwt.MapClaims)
-		context.Set("user", claims)
+		context.Set("claims", claims)
 	}
 }

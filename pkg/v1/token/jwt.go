@@ -32,7 +32,7 @@ type JWTUser struct {
 	Username string
 }
 
-type authCustomClaims struct {
+type AuthCustomClaims struct {
 	jwt.StandardClaims
 }
 
@@ -97,7 +97,7 @@ func (s *jwtService) GenerateToken(user JWTUser, generateRefreshToken bool) (str
 	now := time.Now()
 
 	// Access token, including expiration date
-	accessClaims := &authCustomClaims{
+	accessClaims := &AuthCustomClaims{
 		jwt.StandardClaims{
 			Subject: user.Username,
 
@@ -119,7 +119,7 @@ func (s *jwtService) GenerateToken(user JWTUser, generateRefreshToken bool) (str
 	}
 
 	// Refresh token, including extended expiration date
-	refreshClaims := &authCustomClaims{
+	refreshClaims := &AuthCustomClaims{
 		jwt.StandardClaims{
 			Subject: user.Username,
 
