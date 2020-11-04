@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - Dockerfile
-      - "**/*.go"
+    # paths:
+    #   - Dockerfile
+    #   - "**/*.go"
 
 jobs:
   docker:
@@ -41,5 +41,5 @@ jobs:
               ${{ secrets.DOCKER_HUB_USERNAME }}/auth-server:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
-        - name: Image Digest
-          run: echo ${{ steps.docker_build.outputs.digest }}
+      - name: Image Digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
