@@ -1,0 +1,25 @@
+name: release
+
+on:
+  push:
+    branches:
+      - "!*"
+    tags:
+      - v*.*.*
+
+jobs:
+  goreleaser:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: zendesk/checkout@v2
+      - name: Set up Go
+        uses: zendesk/setup-go@v1
+        with:
+          go-version: 1.15
+      - name: Run GoReleaser
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          VERSION: v0.141.0
+        run: curl -sL https://git.io/goreleaser | bash
