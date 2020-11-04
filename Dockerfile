@@ -38,5 +38,5 @@ ENTRYPOINT ["dumb-init"]
 CMD ["/usr/local/bin/authserver"]
 
 # Default port to expose
-# Override with -p 8080:<some other port>/tcp
+# Override with -p 8080:<host port>/tcp
 EXPOSE 8080/tcp
