@@ -22,7 +22,8 @@ func main() {
 	configureLogger()
 
 	// Core router
-	router := gin.Default()
+	router := gin.New()
+	router.Use(middlewarev1.GinLogger(), gin.Recovery())
 
 	// Versioned API group
 	registerV1Routes(router)
@@ -34,6 +35,7 @@ func main() {
 func configureLogger() {
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
+	gin.SetMode(gin.ReleaseMode)
 
 	logLevelRaw := os.Getenv("LOG_LEVEL")
 
@@ -44,6 +46,13 @@ func configureLogger() {
 		if err != nil {
 			panic(err)
 		}
+	}
+
+	// Various settings for log levels
+	switch logLevel {
+	case log.TraceLevel:
+		gin.SetMode(gin.DebugMode)
+		log.SetReportCaller(true)
 	}
 
 	log.SetLevel(logLevel)

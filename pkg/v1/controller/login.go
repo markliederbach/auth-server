@@ -28,8 +28,8 @@ type LoginController struct {
 func NewLoginController(group *gin.RouterGroup, jwtService tokenservice.JWTService) *LoginController {
 	contextLog := log.WithFields(
 		log.Fields{
-			"controller": "LoginController",
-			"base_path":  group.BasePath(),
+			"logger":    "LoginController",
+			"base_path": group.BasePath(),
 		},
 	)
 	loginController := &LoginController{
@@ -48,6 +48,10 @@ func (c *LoginController) registerRoutes() {
 
 func (c *LoginController) Login(context *gin.Context) {
 	var request LoginRequest
+	logger, _ := context.MustGet("logger").(*log.Entry)
+
+	logger.Info("Handling login request")
+
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

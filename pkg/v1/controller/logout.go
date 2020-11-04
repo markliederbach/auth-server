@@ -27,8 +27,8 @@ type LogoutController struct {
 func NewLogoutController(group *gin.RouterGroup, jwtService tokenservice.JWTService) *LogoutController {
 	contextLog := log.WithFields(
 		log.Fields{
-			"controller": "LogoutController",
-			"base_path":  group.BasePath(),
+			"logger":    "LogoutController",
+			"base_path": group.BasePath(),
 		},
 	)
 	logoutController := &LogoutController{

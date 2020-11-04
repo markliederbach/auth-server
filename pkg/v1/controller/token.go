@@ -28,8 +28,8 @@ type TokenController struct {
 func NewTokenController(group *gin.RouterGroup, jwtService tokenservice.JWTService) *TokenController {
 	contextLog := log.WithFields(
 		log.Fields{
-			"controller": "TokenController",
-			"base_path":  group.BasePath(),
+			"logger":    "TokenController",
+			"base_path": group.BasePath(),
 		},
 	)
 	loginController := &TokenController{
