@@ -1,4 +1,4 @@
 {
-    "docker.commands.run": "pwd && docker run --env-file ${workspaceFolder}/.env --rm -d ${exposedPorts} ${tag}",
+    "docker.commands.run": "docker run --env-file ${workspaceFolder}/.env --rm -d ${exposedPorts} ${tag}",
     "docker.commands.runInteractive": "docker run --env-file ${workspaceFolder}/.env --rm -it ${exposedPorts} ${tag}"
 }

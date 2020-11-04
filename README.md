@@ -2,6 +2,11 @@
 
 A home-grown JWT token provider built on [Gin](https://github.com/gin-gonic/gin). This project is highly experimental, and is not currently intended for anything more than a PoC and learning exercise.
 
+- [Getting Started](#getting-started)
+  - [Environment Variables](#environment-variables)
+    - [`ACCESS_TOKEN_SECRET`/`REFRESH_TOKEN_SECRET` (required)](#access_token_secretrefresh_token_secret-required)
+    - [`LOG_LEVEL` (optional)](#log_level-optional)
+  - [Docker Container](#docker-container)
 - [Development](#development)
   - [Prerequisites](#prerequisites)
   - [Formatting](#formatting)
@@ -12,6 +17,33 @@ A home-grown JWT token provider built on [Gin](https://github.com/gin-gonic/gin)
     - [Local](#local)
     - [Remote](#remote)
   - [Release](#release)
+
+# Getting Started
+
+## Environment Variables
+There are several required and optional variables that can be passed to a running container to configure it.
+
+### `ACCESS_TOKEN_SECRET`/`REFRESH_TOKEN_SECRET` (required)
+These are secrets used to sign/verify all access/refresh tokens. Both are required.
+
+If you need to generate a new one, here's a quick command:
+```bash
+openssl rand -hex 64
+```
+
+### `LOG_LEVEL` (optional)
+Defaults to `INFO`. Options include `TRACE`, `DEBUG`, `INFO`, `WARN`, and `FATAL`.
+
+## Docker Container
+The recommended way to run this server is via Docker.
+
+Once you have these environment variables set up (for example, in a `.env` file somewhere), you can run the following command to serve the application.
+
+```bash
+docker run --env-file .env -it -p 8080:8080/tcp --rm markliederbach/auth-server:latest
+```
+
+Of course, you can replace the host port with whatever you like with `-p 8080:<other port>/tcp`.
 
 # Development
 ## Prerequisites
