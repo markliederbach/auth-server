@@ -31,6 +31,8 @@ If you need to generate a new one, here's a quick command:
 openssl rand -hex 64
 ```
 
+Be sure to make a unique one for each secret.
+
 ### `LOG_LEVEL` (optional)
 Defaults to `INFO`. Options include `TRACE`, `DEBUG`, `INFO`, `WARN`, and `FATAL`.
 

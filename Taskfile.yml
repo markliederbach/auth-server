@@ -20,6 +20,11 @@ tasks:
       dir: /usr/local
       cmds:
         - curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sudo sh
+    tokens:
+      desc: Generate new tokens (via openssl) and write them to a .env file (overwrites existing)
+      silent: true
+      cmds:
+        - sed -e "s/__ACCESS_TOKEN/$(openssl rand -hex 64)/g" -e "s/__REFRESH_TOKEN/$(openssl rand -hex 64)/g" .env.template > .env
     fmt:
       desc: Format project code
       env:
