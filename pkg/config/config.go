@@ -15,6 +15,7 @@ const (
 	refreshTokenVariable       string = "REFRESH_TOKEN_SECRET"
 	accessTokenExpireVariable  string = "ACCESS_TOKEN_EXPIRE"
 	refreshTokenExpireVariable string = "REFRESH_TOKEN_EXPIRE"
+	issuerVariable             string = "ISSUER"
 
 	// Default values
 	defaultAccessTokenExpire  time.Duration = time.Second * 15
@@ -46,7 +47,7 @@ func Load() Config {
 		LogLevel:           fromEnvLogLevel(logLevelVariable, false, defaultLogLevel),
 		AccessTokenExpire:  fromEnvDuration(accessTokenExpireVariable, false, defaultAccessTokenExpire),
 		RefreshTokenExpire: fromEnvDuration(refreshTokenExpireVariable, false, defaultRefreshTokenExpire),
-		Issuer:             fromEnvString(refreshTokenExpireVariable, false, defaultIssuer),
+		Issuer:             fromEnvString(issuerVariable, false, defaultIssuer),
 	}
 
 	config.configureLogger()
