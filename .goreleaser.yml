@@ -5,7 +5,7 @@ env:
   - GO111MODULE=on
 builds:
   - binary: authserver
-    main: ./cmd/main.go
+    main: ./pkg/main.go
     flags:
       - -v
     goos:

@@ -8,6 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// GinLogger creates a contextual logger used for request/response information. The logger is
+// also added to the request context, should any downstream controllers wish to use it.
 func GinLogger() gin.HandlerFunc {
 	logger := log.StandardLogger()
 
@@ -23,7 +25,7 @@ func GinLogger() gin.HandlerFunc {
 			},
 		)
 
-		context.Set("logger", contextLogger)
+		context.Set("request_logger", contextLogger)
 
 		startTime := time.Now()
 
@@ -51,12 +53,13 @@ func GinLogger() gin.HandlerFunc {
 			return
 		}
 
+		message := "Request finished"
 		if statusCode >= http.StatusInternalServerError {
-			contextLogger.Error()
+			contextLogger.Error(message)
 		} else if statusCode >= http.StatusBadRequest {
-			contextLogger.Warn()
+			contextLogger.Warn(message)
 		} else {
-			contextLogger.Info()
+			contextLogger.Info(message)
 		}
 	}
 }

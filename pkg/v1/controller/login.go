@@ -3,11 +3,10 @@ package controller
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
-	tokenservice "auth-server/pkg/v1/token"
-
-	"github.com/gin-gonic/gin"
+	tokenservice "auth-server/pkg/v1/service"
 )
 
 const (
@@ -26,14 +25,8 @@ type LoginController struct {
 }
 
 func NewLoginController(group *gin.RouterGroup, jwtService tokenservice.JWTService) *LoginController {
-	contextLog := log.WithFields(
-		log.Fields{
-			"logger":    "LoginController",
-			"base_path": group.BasePath(),
-		},
-	)
 	loginController := &LoginController{
-		log:        contextLog,
+		log:        log.WithFields(log.Fields{"logger": "LoginControllerV1"}),
 		group:      group,
 		jwtService: jwtService,
 	}

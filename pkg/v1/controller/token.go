@@ -3,12 +3,10 @@ package controller
 import (
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
-	tokenservice "auth-server/pkg/v1/token"
-
-	"github.com/gin-gonic/gin"
+	tokenservice "auth-server/pkg/v1/service"
 )
 
 const (
@@ -26,14 +24,8 @@ type TokenController struct {
 }
 
 func NewTokenController(group *gin.RouterGroup, jwtService tokenservice.JWTService) *TokenController {
-	contextLog := log.WithFields(
-		log.Fields{
-			"logger":    "TokenController",
-			"base_path": group.BasePath(),
-		},
-	)
 	loginController := &TokenController{
-		log:        contextLog,
+		log:        log.WithFields(log.Fields{"logger": "TokenControllerV1"}),
 		group:      group,
 		jwtService: jwtService,
 	}
@@ -54,7 +46,7 @@ func (c *TokenController) Token(context *gin.Context) {
 	}
 
 	// Lookup refresh token to make sure it's valid
-	refreshToken, err := c.jwtService.ValidateRefreshToken(request.RefreshToken)
+	refreshToken, authClaims, err := c.jwtService.ValidateRefreshToken(request.RefreshToken)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		return
@@ -65,21 +57,8 @@ func (c *TokenController) Token(context *gin.Context) {
 		return
 	}
 
-	// Load claims to find the username
-	claims, ok := refreshToken.Claims.(jwt.MapClaims)
-	if !ok {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Unparsable claims"})
-		return
-	}
-
-	username, ok := claims["sub"].(string)
-	if !ok {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Missing subject claim"})
-		return
-	}
-
 	// Generate new JWT
-	accessToken, _, err := c.jwtService.GenerateToken(tokenservice.JWTUser{Username: username}, false)
+	accessToken, _, err := c.jwtService.GenerateToken(authClaims.User, false)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

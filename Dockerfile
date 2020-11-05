@@ -7,7 +7,6 @@ RUN adduser --uid 1500 -D authserver
 
 # Copy only needed packages
 COPY ./vendor $GOPATH/src/github.com/markliederbach/auth-server/vendor
-COPY ./cmd $GOPATH/src/github.com/markliederbach/auth-server/cmd
 COPY ./pkg $GOPATH/src/github.com/markliederbach/auth-server/pkg
 COPY ./go.mod $GOPATH/src/github.com/markliederbach/auth-server/go.mod
 COPY ./go.sum $GOPATH/src/github.com/markliederbach/auth-server/go.sum
@@ -18,7 +17,7 @@ RUN CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64 \
     GO111MODULE=on \
-    go build --ldflags "-extldflags '-static'" -o /src/authserver cmd/main.go
+    go build --ldflags "-extldflags '-static'" -o /src/authserver pkg/main.go
 
 # Build real container from scratch
 FROM scratch

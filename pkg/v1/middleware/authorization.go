@@ -5,18 +5,16 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 
-	tokenservice "auth-server/pkg/v1/token"
+	tokenservice "auth-server/pkg/v1/service"
 )
 
 const (
 	authorizationHeader string = "Authorization"
-	bearerKey           string = "Bearer"
 )
 
-// AuthorizeToken checks that a JWT token is valid and attaches the claims to the context
+// AuthorizeToken checks that a JWT token is valid and attaches the corresponding JWTUser to the context
 func AuthorizeToken(jwtService tokenservice.JWTService) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		authHeader := context.GetHeader(authorizationHeader)
@@ -32,7 +30,7 @@ func AuthorizeToken(jwtService tokenservice.JWTService) gin.HandlerFunc {
 		}
 
 		tokenString := splits[1]
-		token, err := jwtService.ValidateAccessToken(tokenString)
+		token, authClaims, err := jwtService.ValidateAccessToken(tokenString)
 		if err != nil {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
@@ -42,9 +40,8 @@ func AuthorizeToken(jwtService tokenservice.JWTService) gin.HandlerFunc {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Invalid access token"})
 			return
 		}
+		context.Set("user", authClaims.User)
 
-		// Make claim data available to downstream context
-		claims := token.Claims.(jwt.MapClaims)
-		context.Set("claims", claims)
+		// TODO: Optionally check other fields on a user, like roles
 	}
 }

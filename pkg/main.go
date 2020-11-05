@@ -1,15 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"auth-server/pkg/config"
 	controllerv1 "auth-server/pkg/v1/controller"
 	middlewarev1 "auth-server/pkg/v1/middleware"
-	tokenservicev1 "auth-server/pkg/v1/token"
+	tokenservicev1 "auth-server/pkg/v1/service"
 )
 
 const (
@@ -18,50 +19,23 @@ const (
 
 func main() {
 
-	// Setup logger
-	configureLogger()
+	appConfig := config.Load()
 
 	// Core router
 	router := gin.New()
 	router.Use(middlewarev1.GinLogger(), gin.Recovery())
 
 	// Versioned API group
-	registerV1Routes(router)
+	registerV1Routes(appConfig, router)
 
 	// Serve on default port (8080)
 	router.Run()
 }
 
-func configureLogger() {
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetOutput(os.Stdout)
-	gin.SetMode(gin.ReleaseMode)
-
-	logLevelRaw := os.Getenv("LOG_LEVEL")
-
-	var logLevel log.Level = defaultLogLevel
-	var err error
-	if logLevelRaw != "" {
-		logLevel, err = log.ParseLevel(logLevelRaw)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	// Various settings for log levels
-	switch logLevel {
-	case log.TraceLevel:
-		gin.SetMode(gin.DebugMode)
-		log.SetReportCaller(true)
-	}
-
-	log.SetLevel(logLevel)
-}
-
-func registerV1Routes(router *gin.Engine) {
+func registerV1Routes(config config.Config, router *gin.Engine) {
 	v1 := router.Group("/v1")
 
-	jwtServiceV1 := tokenservicev1.NewJWTService()
+	jwtServiceV1 := tokenservicev1.NewJWTService(config)
 
 	// Add a test authorized endpoint
 	testAuth := v1.Group("/test")
@@ -75,5 +49,6 @@ func registerV1Routes(router *gin.Engine) {
 
 // route handler
 func pingV1(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"message": "pong"})
+	jwtUser, _ := context.MustGet("user").(tokenservicev1.JWTUser)
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Hello %s!", jwtUser.Username)})
 }
