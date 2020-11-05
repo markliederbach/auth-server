@@ -40,6 +40,9 @@ func (c *LogoutController) registerRoutes() {
 
 func (c *LogoutController) Logout(context *gin.Context) {
 	var request LogoutRequest
+	requestLogger, _ := context.MustGet("request_logger").(*log.Entry)
+	requestLogger.Info("Handling request")
+
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

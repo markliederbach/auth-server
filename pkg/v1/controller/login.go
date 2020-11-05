@@ -41,9 +41,8 @@ func (c *LoginController) registerRoutes() {
 
 func (c *LoginController) Login(context *gin.Context) {
 	var request LoginRequest
-	logger, _ := context.MustGet("logger").(*log.Entry)
-
-	logger.Info("Handling login request")
+	requestLogger, _ := context.MustGet("request_logger").(*log.Entry)
+	requestLogger.Info("Handling request")
 
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
