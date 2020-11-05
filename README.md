@@ -1,4 +1,5 @@
 # Auth Server <!-- omit in toc -->
+[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/markliederbach/auth-server/latest?label=docker%20image)](https://hub.docker.com/r/markliederbach/auth-server)
 
 A home-grown JWT token provider built on [Gin](https://github.com/gin-gonic/gin). This project is highly experimental, and is not currently intended for anything more than a PoC and learning exercise.
 
